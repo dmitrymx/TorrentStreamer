@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.exe
+
+# Electron builder cache
+.icon-ico/
+
+# IDE & OS
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Logs
+*.log
+test_out.log
+test_err.log
+npm-debug.log*
+
+# Temp
+.cache/
+.temp/

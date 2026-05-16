@@ -1,0 +1,52 @@
+{
+  "name": "torrent-streamer",
+  "version": "1.0.0",
+  "description": "TorrentStreamer — Мгновенный стриминг музыки из торрентов",
+  "main": "src/main/main.js",
+  "author": "dmitrymx",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win",
+    "dist:portable": "electron-builder --win portable"
+  },
+  "dependencies": {
+    "webtorrent": "^2.5.1"
+  },
+  "devDependencies": {
+    "electron": "^34.3.1",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.johny.torrent-streamer",
+    "productName": "TorrentStreamer",
+    "copyright": "Copyright © 2026 dmitrymx",
+    "npmRebuild": false,
+    "asar": true,
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.png",
+      "extraResources": [
+        {
+          "from": "build/icon.ico",
+          "to": "icon.ico"
+        }
+      ]
+    },
+    "portable": {
+      "artifactName": "TorrentStreamer_${version}_Portable.exe"
+    }
+  }
+}
