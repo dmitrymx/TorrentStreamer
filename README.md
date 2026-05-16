@@ -25,7 +25,7 @@
 ### 🔌 Внешние плееры
 | Плеер | Способ запуска |
 |-------|---------------|
-| **foobar2000** | `/add <urls> /play` |
+| **foobar2000** | `<urls> /play` (замена плейлиста) |
 | **AIMP** | `/ADD_PLAY <urls>` |
 | **VLC** | `--playlist-enqueue <urls>` |
 | **Winamp** | `/ADD <urls>` |
