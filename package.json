@@ -1,6 +1,6 @@
 {
   "name": "torrent-streamer",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "TorrentStreamer — Мгновенный стриминг музыки из торрентов",
   "main": "src/main/main.js",
   "author": "dmitrymx",
@@ -42,6 +42,10 @@
         {
           "from": "build/icon.ico",
           "to": "icon.ico"
+        },
+        {
+          "from": "build/icon.png",
+          "to": "icon.png"
         }
       ]
     },

@@ -6,7 +6,7 @@ const { ipcMain, dialog, shell } = require('electron')
 const path = require('path')
 const { detectPlayers, launchPlayer } = require('./player-launcher')
 
-function registerIpcHandlers(engine, settings, getWindow) {
+function registerIpcHandlers(engine, settings, getWindow, logger) {
 
   /* ── Torrent ──────────────────────────────────────────────── */
 
@@ -168,6 +168,30 @@ function registerIpcHandlers(engine, settings, getWindow) {
   ipcMain.handle('shell:showItemInFolder', (_e, filePath) => {
     shell.showItemInFolder(filePath)
     return { success: true }
+  })
+
+  /* ── Logs ───────────────────────────────────────────────── */
+
+  ipcMain.handle('logs:export', async () => {
+    if (!logger) return { success: false, error: 'Logger not initialized' }
+    const win = getWindow()
+    const result = await dialog.showSaveDialog(win, {
+      title: 'Сохранить логи',
+      defaultPath: `TorrentStreamer_logs_${new Date().toISOString().slice(0, 10)}.txt`,
+      filters: [{ name: 'Текстовые файлы', extensions: ['txt'] }]
+    })
+    if (result.canceled) return { success: false }
+    try {
+      const fs = require('fs')
+      fs.copyFileSync(logger.getLogPath(), result.filePath)
+      return { success: true, path: result.filePath }
+    } catch (e) {
+      return { success: false, error: e.message }
+    }
+  })
+
+  ipcMain.handle('logs:getPath', () => {
+    return logger ? logger.getLogPath() : null
   })
 }
 

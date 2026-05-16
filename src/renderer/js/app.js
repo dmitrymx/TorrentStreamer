@@ -623,9 +623,12 @@
       }
     })
 
-    // Download - Open Folder
+    // Download - Open Folder (open actual torrent folder, not root download dir)
     els.btnOpenFolder.addEventListener('click', () => {
-      if (activeTorrentInfo) {
+      if (activeTorrentInfo && activeTorrentInfo.torrentFolder) {
+        api.shell.openPath(activeTorrentInfo.torrentFolder)
+      } else if (activeTorrentInfo) {
+        // Fallback: open download dir from settings
         api.shell.openPath(els.inputPath.value)
       }
     })
@@ -650,6 +653,19 @@
 
     // Settings - Save
     els.btnSaveSettings.addEventListener('click', saveSettings)
+
+    // Settings - Export logs
+    const btnExportLogs = document.getElementById('btn-export-logs')
+    if (btnExportLogs) {
+      btnExportLogs.addEventListener('click', async () => {
+        const result = await api.logs.export()
+        if (result.success) {
+          toast(`Логи сохранены: ${result.path}`, 'success')
+        } else if (result.error) {
+          toast(`Ошибка: ${result.error}`, 'error')
+        }
+      })
+    }
 
     // Theme switcher
     els.themeDark.addEventListener('click', () => applyTheme('dark'))

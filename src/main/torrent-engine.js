@@ -192,6 +192,7 @@ class TorrentEngine {
           size: torrent.length,
           fileCount: torrent.files.length,
           audioFileCount: audioFiles.length,
+          torrentFolder: path.join(torrent.path, torrent.name),
           files: allFiles
         })
       })

@@ -23,60 +23,55 @@ app.on('second-instance', () => {
   }
 })
 
-/* ── Tray Icon ────────────────────────────────────────────── */
-function setupTray() {
-  if (tray) return
+/* ── App Icon Helper ──────────────────────────────────────── */
+const fs = require('fs')
 
-  // Try loading the app icon from multiple possible locations
-  // Prefer .ico on Windows for best tray rendering
-  let trayIcon = null
-  const iconPaths = [
+function getAppIcon() {
+  // In packaged app: process.resourcesPath = <app>/resources/
+  // In dev mode: __dirname = src/main/
+  const candidates = [
+    // Packaged: extraResources copies icon.ico to resources/
+    path.join(process.resourcesPath || '', 'icon.ico'),
+    // Dev mode: relative to src/main/
     path.join(__dirname, '..', '..', 'build', 'icon.ico'),
     path.join(__dirname, '..', '..', 'assets', 'icon.ico'),
     path.join(__dirname, '..', '..', 'build', 'icon.png'),
-    path.join(__dirname, '..', '..', 'assets', 'icon.png'),
-    path.join(process.resourcesPath || '', 'icon.ico'),
-    path.join(process.resourcesPath || '', 'icon.png'),
-    path.join(app.getAppPath(), 'build', 'icon.ico'),
-    path.join(app.getAppPath(), 'build', 'icon.png')
+    path.join(__dirname, '..', '..', 'assets', 'icon.png')
   ]
 
-  for (const iconPath of iconPaths) {
+  for (const iconPath of candidates) {
     try {
-      if (!require('fs').existsSync(iconPath)) continue
+      if (!fs.existsSync(iconPath)) continue
       const img = nativeImage.createFromPath(iconPath)
       if (!img.isEmpty()) {
-        // Resize to proper tray size (32x32 for crisp rendering on Windows)
-        trayIcon = img.resize({ width: 32, height: 32 })
-        console.log('[Main] Tray icon loaded from:', iconPath)
-        break
+        console.log('[Main] Icon loaded from:', iconPath)
+        return img
       }
     } catch {}
   }
 
-  // Fallback: generate a 32x32 teal circle programmatically using raw RGBA buffer
-  if (!trayIcon || trayIcon.isEmpty()) {
-    const size = 32
-    const buf = Buffer.alloc(size * size * 4) // RGBA
-    const cx = size / 2, cy = size / 2, r = size / 2 - 1
-    for (let y = 0; y < size; y++) {
-      for (let x = 0; x < size; x++) {
-        const dist = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2)
-        const idx = (y * size + x) * 4
-        if (dist <= r) {
-          buf[idx] = 20     // R (teal)
-          buf[idx + 1] = 184 // G
-          buf[idx + 2] = 166 // B
-          buf[idx + 3] = 255 // A
-        } else {
-          buf[idx + 3] = 0  // transparent
-        }
+  // Fallback: generate a 32x32 teal circle
+  console.warn('[Main] No icon file found, using generated fallback')
+  const size = 32
+  const buf = Buffer.alloc(size * size * 4)
+  const cx = size / 2, cy = size / 2, r = size / 2 - 1
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const dist = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2)
+      const idx = (y * size + x) * 4
+      if (dist <= r) {
+        buf[idx] = 20; buf[idx + 1] = 184; buf[idx + 2] = 166; buf[idx + 3] = 255
       }
     }
-    trayIcon = nativeImage.createFromBuffer(buf, { width: size, height: size })
-    console.log('[Main] Using generated tray icon')
   }
+  return nativeImage.createFromBuffer(buf, { width: size, height: size })
+}
 
+/* ── Tray Icon ────────────────────────────────────────────── */
+function setupTray() {
+  if (tray) return
+
+  const trayIcon = getAppIcon().resize({ width: 32, height: 32 })
   tray = new Tray(trayIcon)
 
   const contextMenu = Menu.buildFromTemplate([
@@ -103,12 +98,15 @@ function destroyTray() {
 
 /* ── Window Creation ──────────────────────────────────────── */
 function createWindow() {
+  const appIcon = getAppIcon()
+
   mainWindow = new BrowserWindow({
     width: 920,
     height: 700,
     minWidth: 760,
     minHeight: 560,
     frame: false,
+    icon: appIcon,
     backgroundColor: '#0a0a0f',
     show: false,
     webPreferences: {
@@ -123,7 +121,6 @@ function createWindow() {
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show()
-    // Setup tray if setting is enabled on startup
     if (settingsManager && settingsManager.get('minimizeToTray')) {
       setupTray()
       console.log('[Main] Tray enabled on startup')
@@ -168,13 +165,19 @@ app.whenReady().then(async () => {
   const { SettingsManager } = require('./settings')
   const { TorrentEngine } = require('./torrent-engine')
   const { registerIpcHandlers } = require('./ipc-handlers')
+  const { Logger } = require('./logger')
 
   settingsManager = new SettingsManager()
+
+  // Initialize logger FIRST so all console output is captured
+  const logger = new Logger(settingsManager.getDataDir())
+  console.log('[Main] App starting — v1.2.2')
+
   torrentEngine = new TorrentEngine(settingsManager)
   await torrentEngine.init()
 
   registerWindowIpc()
-  registerIpcHandlers(torrentEngine, settingsManager, () => mainWindow)
+  registerIpcHandlers(torrentEngine, settingsManager, () => mainWindow, logger)
 
   createWindow()
 })

@@ -61,7 +61,7 @@
 ## 📦 Установка
 
 ### Portable (рекомендуется)
-1. Скачайте `TorrentStreamer_1.2.1_Portable.exe` из [Releases](../../releases)
+1. Скачайте `TorrentStreamer_1.2.2_Portable.exe` из [Releases](../../releases)
 2. Запустите — установка не требуется
 3. Настройки сохраняются в `%APPDATA%/torrent-streamer/`
 

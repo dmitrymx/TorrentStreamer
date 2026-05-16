@@ -77,6 +77,12 @@ contextBridge.exposeInMainWorld('api', {
     selectTorrent: () => ipcRenderer.invoke('dialog:selectTorrent')
   },
 
+  /* ── Logs ──────────────────────────────────────────────────── */
+  logs: {
+    export: () => ipcRenderer.invoke('logs:export'),
+    getPath: () => ipcRenderer.invoke('logs:getPath')
+  },
+
   /* ── Shell ────────────────────────────────────────────────── */
   shell: {
     openPath: (p) => ipcRenderer.invoke('shell:openPath', p),
