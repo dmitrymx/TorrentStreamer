@@ -209,7 +209,14 @@ class TorrentEngine {
 
       this.activeTorrent.on('done', () => {
         console.log('[Engine] Download complete!')
-        if (this._onDone) this._onDone()
+        // Collect local file paths for all audio files (no longer locked after download)
+        const audioFiles = this._getAudioFiles(torrent)
+        const localPaths = audioFiles.map(f => ({
+          name: f.name,
+          path: f.path,
+          filePath: path.join(torrent.path, f.path)
+        }))
+        if (this._onDone) this._onDone(localPaths)
       })
     })
   }

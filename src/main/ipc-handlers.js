@@ -83,10 +83,10 @@ function registerIpcHandlers(engine, settings, getWindow) {
     }
   })
 
-  engine.on('done', () => {
+  engine.on('done', (localPaths) => {
     const win = getWindow()
     if (win && !win.isDestroyed()) {
-      win.webContents.send('torrent:done')
+      win.webContents.send('torrent:done', localPaths)
     }
   })
 

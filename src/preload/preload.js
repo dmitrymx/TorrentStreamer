@@ -47,7 +47,7 @@ contextBridge.exposeInMainWorld('api', {
       return () => ipcRenderer.removeListener('torrent:playerLaunched', handler)
     },
     onDone: (cb) => {
-      const handler = () => cb()
+      const handler = (_e, localPaths) => cb(localPaths)
       ipcRenderer.on('torrent:done', handler)
       return () => ipcRenderer.removeListener('torrent:done', handler)
     },

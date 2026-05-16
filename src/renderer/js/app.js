@@ -500,11 +500,43 @@
       toast('Внешний плеер запущен! 🎵', 'success')
     })
 
-    api.torrent.onDone(() => {
+    api.torrent.onDone((localPaths) => {
       isDownloading = false
       els.dlIcon.className = 'dl-icon done-icon'
       els.dlStatus.textContent = 'Загрузка завершена! ✓'
       toast('Загрузка завершена!', 'success')
+
+      // Switch from HTTP stream URLs to local file paths (stable offline playback)
+      if (localPaths && localPaths.length > 0) {
+        // Update streamUrls to use file:// paths instead of HTTP
+        streamUrls = localPaths.map(f => ({
+          name: f.name,
+          path: f.path,
+          url: 'file:///' + f.filePath.replace(/\\/g, '/')
+        }))
+        currentAudioPaths = localPaths.map(f => f.filePath)
+
+        // Update built-in player playlist to use local files (preserving current position)
+        if (useBuiltinPlayer() && bpPlaylist.length > 0) {
+          const currentTime = els.bpAudio.currentTime
+          const wasPlaying = bpPlaying
+          const currentIdx = bpIndex
+
+          bpPlaylist = localPaths.map(f => ({
+            name: f.name,
+            url: 'file:///' + f.filePath.replace(/\\/g, '/')
+          }))
+
+          // Restore playback position (seamless switch)
+          if (currentIdx < bpPlaylist.length) {
+            bpIndex = currentIdx
+            els.bpAudio.src = bpPlaylist[bpIndex].url
+            els.bpAudio.currentTime = currentTime
+            if (wasPlaying) els.bpAudio.play().catch(() => {})
+          }
+          console.log('[App] Switched playlist to local files')
+        }
+      }
     })
 
     api.torrent.onError((msg) => {
