@@ -209,7 +209,32 @@ class TorrentEngine {
 
       this.activeTorrent.on('done', () => {
         console.log('[Engine] Download complete!')
-        // Collect local file paths for all audio files (no longer locked after download)
+
+        // Force final progress update with all files at 100%
+        const finalFiles = torrent.files.map((f, i) => ({
+          index: i,
+          name: f.name,
+          path: f.path,
+          size: f.length,
+          progress: 100,
+          isAudio: AUDIO_EXTENSIONS.includes(path.extname(f.name).toLowerCase()),
+          fullPath: path.join(torrent.path, f.path)
+        })).sort((a, b) => a.path.localeCompare(b.path))
+
+        if (this._onProgress) this._onProgress({
+          percent: 100,
+          downloaded: torrent.length,
+          total: torrent.length,
+          downloadSpeed: 0,
+          uploadSpeed: torrent.uploadSpeed,
+          numPeers: torrent.numPeers,
+          eta: 0,
+          ratio: torrent.downloaded > 0 ? (torrent.uploaded / torrent.downloaded) : 0,
+          files: finalFiles,
+          done: true
+        })
+
+        // Collect local file paths for all audio files
         const audioFiles = this._getAudioFiles(torrent)
         const localPaths = audioFiles.map(f => ({
           name: f.name,
@@ -225,13 +250,16 @@ class TorrentEngine {
   _getStreamUrls(torrent) {
     if (!this.streamPort || !torrent) return []
     const audioFiles = this._getAudioFiles(torrent)
-    return audioFiles.map(f => ({
-      name: f.name,
-      path: f.path,
-      size: f.length,
-      // Use WebTorrent's built-in streamURL (handles path encoding correctly)
-      url: `http://127.0.0.1:${this.streamPort}${f.streamURL}`
-    }))
+    return audioFiles.map(f => {
+      // streamURL may contain backslashes on Windows — normalize to forward slashes
+      const cleanUrl = (f.streamURL || '').replace(/\\/g, '/')
+      return {
+        name: f.name,
+        path: f.path,
+        size: f.length,
+        url: `http://127.0.0.1:${this.streamPort}${cleanUrl}`
+      }
+    })
   }
 
   /** Start progress monitoring every 500ms */

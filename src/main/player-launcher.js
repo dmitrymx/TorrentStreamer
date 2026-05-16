@@ -25,7 +25,8 @@ const KNOWN_PLAYERS = [
       'C:\\Program Files\\foobar2000 v2\\foobar2000.exe',
       path.join(process.env.LOCALAPPDATA || '', 'foobar2000 v2\\foobar2000.exe')
     ],
-    buildArgs: (files) => ['/add', ...files, '/play']
+    // /replace clears old playlist (prevents stale HTTP URLs on restart)
+    buildArgs: (files) => ['/replace', ...files, '/play']
   },
   {
     name: 'AIMP',

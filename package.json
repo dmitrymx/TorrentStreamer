@@ -1,6 +1,6 @@
 {
   "name": "torrent-streamer",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "TorrentStreamer — Мгновенный стриминг музыки из торрентов",
   "main": "src/main/main.js",
   "author": "dmitrymx",
