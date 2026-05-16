@@ -277,6 +277,7 @@
     isDownloading = false
     activeTorrentInfo = null
     currentAudioPaths = []
+    streamUrls = []
     bpStop()
     els.builtinPlayer.style.display = 'none'
     els.dlCover.style.display = 'none'
@@ -506,17 +507,12 @@
       els.dlStatus.textContent = 'Загрузка завершена! ✓'
       toast('Загрузка завершена!', 'success')
 
-      // Switch from HTTP stream URLs to local file paths (stable offline playback)
+      // Keep streamUrls as HTTP URLs — they stay valid while the stream server is running.
+      // External players should always use HTTP URLs to avoid "file in use" errors.
       if (localPaths && localPaths.length > 0) {
-        // Update streamUrls to use file:// paths instead of HTTP
-        streamUrls = localPaths.map(f => ({
-          name: f.name,
-          path: f.path,
-          url: 'file:///' + f.filePath.replace(/\\/g, '/')
-        }))
         currentAudioPaths = localPaths.map(f => f.filePath)
 
-        // Update built-in player playlist to use local files (preserving current position)
+        // Only switch built-in player to local files (more stable for offline playback)
         if (useBuiltinPlayer() && bpPlaylist.length > 0) {
           const currentTime = els.bpAudio.currentTime
           const wasPlaying = bpPlaying
@@ -534,7 +530,7 @@
             els.bpAudio.currentTime = currentTime
             if (wasPlaying) els.bpAudio.play().catch(() => {})
           }
-          console.log('[App] Switched playlist to local files')
+          console.log('[App] Switched built-in player to local files')
         }
       }
     })
@@ -603,7 +599,7 @@
     // Download - Cancel
     els.btnCancel.addEventListener('click', cancelDownload)
 
-    // Download - Open Player (manual)
+    // Download - Open Player (manual) — always use HTTP stream URLs
     els.btnOpenPlayer.addEventListener('click', async () => {
       if (streamUrls.length === 0) {
         toast('Нет готовых аудио-файлов', 'warning')
@@ -614,7 +610,10 @@
         bpLoadPlaylist(playlist)
         toast('Встроенный плеер запущен', 'success')
       } else {
-        const result = await api.player.launch(currentAudioPaths)
+        // Send HTTP streaming URLs to external player (not local paths!)
+        // Local files may be locked by WebTorrent causing "file in use" errors
+        const httpUrls = streamUrls.map(u => u.url)
+        const result = await api.player.launch(httpUrls)
         if (result.success) {
           toast('Плеер запущен', 'success')
         } else {
