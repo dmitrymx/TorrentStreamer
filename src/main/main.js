@@ -27,11 +27,14 @@ app.on('second-instance', () => {
 const fs = require('fs')
 
 function getAppIcon() {
-  // In packaged app: process.resourcesPath = <app>/resources/
-  // In dev mode: __dirname = src/main/
+  // Build candidate paths — order matters, first match wins
   const candidates = [
-    // Packaged: extraResources copies icon.ico to resources/
+    // Packaged portable: exe extracts to temp, resources/ is next to exe
+    path.join(path.dirname(process.execPath), 'resources', 'icon.ico'),
+    path.join(path.dirname(process.execPath), 'resources', 'icon.png'),
+    // Standard packaged: process.resourcesPath is set by Electron
     path.join(process.resourcesPath || '', 'icon.ico'),
+    path.join(process.resourcesPath || '', 'icon.png'),
     // Dev mode: relative to src/main/
     path.join(__dirname, '..', '..', 'build', 'icon.ico'),
     path.join(__dirname, '..', '..', 'assets', 'icon.ico'),
@@ -47,11 +50,18 @@ function getAppIcon() {
         console.log('[Main] Icon loaded from:', iconPath)
         return img
       }
-    } catch {}
+    } catch (e) {
+      console.warn('[Main] Icon load failed:', iconPath, e.message)
+    }
   }
 
+  // Log all attempted paths for debugging
+  console.warn('[Main] No icon file found, tried:', candidates.join(', '))
+  console.warn('[Main] execPath:', process.execPath)
+  console.warn('[Main] resourcesPath:', process.resourcesPath)
+  console.warn('[Main] __dirname:', __dirname)
+
   // Fallback: generate a 32x32 teal circle
-  console.warn('[Main] No icon file found, using generated fallback')
   const size = 32
   const buf = Buffer.alloc(size * size * 4)
   const cx = size / 2, cy = size / 2, r = size / 2 - 1
@@ -171,7 +181,7 @@ app.whenReady().then(async () => {
 
   // Initialize logger FIRST so all console output is captured
   const logger = new Logger(settingsManager.getDataDir())
-  console.log('[Main] App starting — v1.2.2')
+  console.log('[Main] App starting — v1.3.0')
 
   torrentEngine = new TorrentEngine(settingsManager)
   await torrentEngine.init()

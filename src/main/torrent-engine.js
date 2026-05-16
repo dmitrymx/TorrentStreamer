@@ -399,10 +399,20 @@ class TorrentEngine {
   _cleanupTemp() {
     if (!this.tempPath) return
     try {
-      fs.rmSync(this.tempPath, { recursive: true, force: true })
+      fs.rmSync(this.tempPath, { recursive: true, force: true, maxRetries: 3, retryDelay: 500 })
       console.log('[Engine] Temp files cleaned:', this.tempPath)
     } catch (e) {
-      console.error('[Engine] Cleanup error:', e.message)
+      console.warn('[Engine] Cleanup warning (files may still be locked):', e.message)
+      // Schedule delayed cleanup for stubborn Windows file locks
+      const tempToClean = this.tempPath
+      setTimeout(() => {
+        try {
+          fs.rmSync(tempToClean, { recursive: true, force: true })
+          console.log('[Engine] Delayed cleanup success:', tempToClean)
+        } catch (e2) {
+          console.warn('[Engine] Delayed cleanup failed:', e2.message)
+        }
+      }, 3000)
     }
     this.tempPath = null
     this.streamOnly = false

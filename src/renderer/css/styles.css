@@ -775,6 +775,34 @@ html, body {
 }
 .btn-save:active { transform: translateY(0); }
 
+/* Secondary button (outlined, for non-primary actions) */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(20, 184, 166, 0.08);
+}
+.btn-secondary:active {
+  transform: translateY(1px);
+}
+.btn-secondary svg {
+  opacity: 0.7;
+}
+
 /* ══ TOASTS ═════════════════════════════════════════════════ */
 .toast-container {
   position: fixed;

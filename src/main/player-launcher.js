@@ -15,8 +15,8 @@ const KNOWN_PLAYERS = [
       'C:\\Program Files (x86)\\foobar2000\\foobar2000.exe',
       path.join(process.env.LOCALAPPDATA || '', 'foobar2000\\foobar2000.exe')
     ],
-    // foobar2000: /add adds to playlist, /play starts playback
-    buildArgs: (files) => ['/add', ...files, '/play']
+    // foobar2000 docs: without /add = replaces playlist. /play starts playback.
+    buildArgs: (files) => [...files, '/play']
   },
   {
     name: 'foobar2000 v2',
@@ -25,8 +25,8 @@ const KNOWN_PLAYERS = [
       'C:\\Program Files\\foobar2000 v2\\foobar2000.exe',
       path.join(process.env.LOCALAPPDATA || '', 'foobar2000 v2\\foobar2000.exe')
     ],
-    // /replace clears old playlist (prevents stale HTTP URLs on restart)
-    buildArgs: (files) => ['/replace', ...files, '/play']
+    // foobar2000 v2 docs: without /add = replaces playlist. /play starts playback.
+    buildArgs: (files) => [...files, '/play']
   },
   {
     name: 'AIMP',
@@ -112,9 +112,9 @@ function identifyPlayer(playerPath) {
       }
     }
   }
-  // Fallback: match by executable name
+  // Fallback: match by executable name (prefer v2 if name contains 'v2')
   if (baseName.includes('foobar')) {
-    return KNOWN_PLAYERS.find(p => p.id === 'foobar2000')
+    return KNOWN_PLAYERS.find(p => p.id === 'foobar2000v2') || KNOWN_PLAYERS.find(p => p.id === 'foobar2000')
   }
   if (baseName.includes('aimp')) {
     return KNOWN_PLAYERS.find(p => p.id === 'aimp')
