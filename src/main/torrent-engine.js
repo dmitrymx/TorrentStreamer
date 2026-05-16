@@ -209,37 +209,39 @@ class TorrentEngine {
 
       this.activeTorrent.on('done', () => {
         console.log('[Engine] Download complete!')
+        const t = this.activeTorrent
+        if (!t || t.destroyed) return
 
         // Force final progress update with all files at 100%
-        const finalFiles = torrent.files.map((f, i) => ({
+        const finalFiles = t.files.map((f, i) => ({
           index: i,
           name: f.name,
           path: f.path,
           size: f.length,
           progress: 100,
           isAudio: AUDIO_EXTENSIONS.includes(path.extname(f.name).toLowerCase()),
-          fullPath: path.join(torrent.path, f.path)
+          fullPath: path.join(t.path, f.path)
         })).sort((a, b) => a.path.localeCompare(b.path))
 
         if (this._onProgress) this._onProgress({
           percent: 100,
-          downloaded: torrent.length,
-          total: torrent.length,
+          downloaded: t.length,
+          total: t.length,
           downloadSpeed: 0,
-          uploadSpeed: torrent.uploadSpeed,
-          numPeers: torrent.numPeers,
+          uploadSpeed: t.uploadSpeed,
+          numPeers: t.numPeers,
           eta: 0,
-          ratio: torrent.downloaded > 0 ? (torrent.uploaded / torrent.downloaded) : 0,
+          ratio: t.downloaded > 0 ? (t.uploaded / t.downloaded) : 0,
           files: finalFiles,
           done: true
         })
 
         // Collect local file paths for all audio files
-        const audioFiles = this._getAudioFiles(torrent)
+        const audioFiles = this._getAudioFiles(t)
         const localPaths = audioFiles.map(f => ({
           name: f.name,
           path: f.path,
-          filePath: path.join(torrent.path, f.path)
+          filePath: path.join(t.path, f.path)
         }))
         if (this._onDone) this._onDone(localPaths)
       })
