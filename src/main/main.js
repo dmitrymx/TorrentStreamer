@@ -181,7 +181,7 @@ app.whenReady().then(async () => {
 
   // Initialize logger FIRST so all console output is captured
   const logger = new Logger(settingsManager.getDataDir())
-  console.log('[Main] App starting — v1.3.1')
+  console.log('[Main] App starting — v1.4.0')
 
   torrentEngine = new TorrentEngine(settingsManager)
   await torrentEngine.init()
