@@ -151,6 +151,15 @@ html, body {
   gap: 8px;
 }
 .titlebar-icon { display: flex; align-items: center; }
+.titlebar-app-icon {
+  border-radius: 6px;
+  filter: drop-shadow(0 0 4px rgba(45, 212, 191, 0.3));
+  transition: var(--transition);
+}
+.titlebar-app-icon:hover {
+  filter: drop-shadow(0 0 8px rgba(45, 212, 191, 0.5));
+  transform: scale(1.1);
+}
 .titlebar-title {
   font-size: 12px;
   font-weight: 600;
@@ -733,11 +742,60 @@ html, body {
 
 /* ── About ──────────────────────────────────────────────────── */
 .about-block {
-  padding: 14px;
+  padding: 18px;
   background: rgba(0,0,0,0.15);
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
 }
+.about-icon-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.about-icon-spinner {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.about-icon-spinner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: var(--accent);
+  border-right-color: var(--accent-3);
+  animation: icon-spin 3s linear infinite;
+}
+.about-icon-spinner::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  border: 1.5px solid transparent;
+  border-bottom-color: var(--accent-2);
+  border-left-color: var(--accent);
+  animation: icon-spin 2s linear infinite reverse;
+}
+.about-app-icon {
+  border-radius: 12px;
+  filter: drop-shadow(0 0 10px rgba(45, 212, 191, 0.35));
+  transition: transform 0.4s var(--ease), filter 0.4s var(--ease);
+  z-index: 1;
+}
+.about-icon-spinner:hover .about-app-icon {
+  transform: scale(1.08);
+  filter: drop-shadow(0 0 16px rgba(45, 212, 191, 0.5));
+}
+@keyframes icon-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.about-info { flex: 1; }
 .about-name {
   font-size: 15px;
   font-weight: 700;
